@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import ode
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import animation
 
 """
 F = GM m / r^2
@@ -10,20 +11,14 @@ F_SAT = Mu m / r^2
 """
 
 
-def plot(r, bod_rad):
-    #Setup plot environment
-    fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(111, projection='3d')
-    
-    #define the radius of body to orbit
-    rplot = bod_rad
-    
+#Serves as a initialization function for the background
+def plot_bckground(ax, rplot):
     #plot body to orbit
     _u,_v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
     _x = rplot*np.cos(_u)*np.sin(_v)
     _y = rplot*np.sin(_u)*np.sin(_v)
     _z = rplot*np.cos(_v)
-    ax.plot_surface(_x, _y, _z, cmap='Blues')
+    ax.plot_surface(_x, _y, _z, cmap='Blues', zorder=0)
 
     #X, y z axes lines
     l= rplot *2
@@ -31,23 +26,63 @@ def plot(r, bod_rad):
     u, v, w = [[l,0, 0], [0,l,0], [0, 0, l]]
     ax.quiver(x, y, z, u, v, w, color='k')
     
-    #Defining plot limits
-    max_val = np.max(np.abs(r))
-    ax.set_xlim([-max_val, max_val])
-    ax.set_xlim([-max_val, max_val])
-    ax.set_xlim([-max_val, max_val])
-    
-    #Trajectory and starting point of satellite
-    ax.plot(r[:,0], r[:,1], r[:,2], 'k')
-    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko')
-    
-    
     ax.set_xlabel('X (km)'); ax.set_ylabel('Y km'); ax.set_zlabel('Z km');
     ax.set_aspect('auto', anchor='C')
 
-    plt.legend(['Trajectory', 'Starting Position']  )
+    return ax
 
+def plot_orbit(ax, r):
+    #Trajectory and starting point of satellite
+    ax.plot(r[:,0], r[:,1], r[:,2], 'k--', label='trajectory', zorder=10)
+    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
+    return ax
+
+def orbit_anim(frame, ax, r, pos):
+    orb = ax.plot(r[:frame+1, 0], r[:frame+1, 1], r[:frame+1, 2], 'k--', label='trajectory', zorder=10)
+    pos.set_data(r[frame, 0], r[frame, 1])
+    pos.set_3d_properties(r[frame, 2], 'z')
+    return orb
+
+def plot(r, bod_rad):
+    #Setup plot environment
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    #Defining plot limits
+    max_val = np.max(np.abs(r))
+    ax.set_xlim([-max_val, max_val])
+    ax.set_ylim([-max_val, max_val])
+    ax.set_zlim([-max_val, max_val])
+    
+    #Plot the orbit
+    ax = plot_orbit(ax, r)    
+    
+    #define the radius of body to orbit
+    rplot = bod_rad
+    #plot body to orbit
+    ax = plot_bckground(ax, bod_rad)
+
+    plt.legend()
     plt.show()
+
+
+def plot_animate(r, bod_rad, steps, dt):
+    #Setup plot environment
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    max_val = np.max(np.abs(r))
+    ax.set_xlim([-max_val, max_val])
+    ax.set_ylim([-max_val, max_val])
+    ax.set_zlim([-max_val, max_val])
+
+    ax = plot_bckground(ax, bod_rad)
+    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
+    pos, = ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'go', label='Current Position', zorder=10)
+
+    anime = animation.FuncAnimation(fig, orbit_anim,fargs=(ax, r, pos), frames=steps, interval=dt)
+    
+    plt.legend()
+    plt.show()
+
 
 earth_radius= 6376
 earth_Mu= 398600
@@ -69,6 +104,9 @@ def differential(time, state, Mu):
 
     return [vx, vy, vz, ax, ay, az]
 
+
+
+
 if __name__ == '__main__':
 
     #Implementation of keplar's laws
@@ -77,14 +115,14 @@ if __name__ == '__main__':
     #Speed
     v_mag = np.sqrt(earth_Mu / r_mag)
     #Period
-    per = np.sqrt( ( r_mag**3 * 4 * np.pi** 2) / earth_Mu )
+    per = np.sqrt( ( r_mag**3 * 4 * np.pi** 2) / earth_Mu ) * 10
     #Timestep 
     dt = 60
     #Number of steps
     steps = int(np.ceil(per/dt))
     
     #Set initial conditions
-    r0 = np.array([r_mag, 0,0])
+    r0 = np.array([r_mag,0,0])
     v0 = np.array([0, v_mag, 0])
 
 
@@ -109,7 +147,7 @@ if __name__ == '__main__':
         ts[step] = solver.t
         ys[step] = solver.y
         step+=1
-    rs = ys[:, :3]
-
-    plot(rs, earth_radius)
-
+    
+    rs = ys[:, :]
+    #plot(rs, earth_radius)
+    plot_animate(rs, earth_radius, steps, dt)
