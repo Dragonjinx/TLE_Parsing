@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "Orbital_mech/bin/python",
+    "python.autoComplete.extraPaths": ["${workspaceFolder}"],
+    "python.linting.enabled": true
+}
