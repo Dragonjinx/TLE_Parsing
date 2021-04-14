@@ -10,7 +10,6 @@ Mu = GM
 F_SAT = Mu m / r^2 
 """
 
-
 #Serves as a initialization function for the background
 def plot_bckground(ax, rplot):
     #plot body to orbit
@@ -26,6 +25,7 @@ def plot_bckground(ax, rplot):
     u, v, w = [[l,0, 0], [0,l,0], [0, 0, l]]
     ax.quiver(x, y, z, u, v, w, color='k')
     
+    #setting the labels in the plot
     ax.set_xlabel('X (km)'); ax.set_ylabel('Y km'); ax.set_zlabel('Z km');
     ax.set_aspect('auto', anchor='C')
 
@@ -37,11 +37,18 @@ def plot_orbit(ax, r):
     ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
     return ax
 
-def orbit_anim(frame, ax, r, pos):
-    orb = ax.plot(r[:frame+1, 0], r[:frame+1, 1], r[:frame+1, 2], 'k--', label='trajectory', zorder=10)
+
+def orbit_anim(frame, ax, r, orb, pos):
+    #Trajectory and current position implementation to animate the satellite
+    # The implementation below was a bad way of doing this, resulted in conflicts during animation
+    # orb = ax.plot(r[:frame+1, 0], r[:frame+1, 1], r[:frame+1, 2], 'k--', label='trajectory', zorder=10)
+    # This plotted a steady line of current position, don't do this 
+    # ax.plot(r[frame, 0], r[frame, 1], r[frame, 2], 'go', zorder=10)
+    orb.set_data(r[:frame+1, 0], r[:frame+1, 1])
+    orb.set_3d_properties(r[:frame+1, 2], 'z')    
     pos.set_data(r[frame, 0], r[frame, 1])
     pos.set_3d_properties(r[frame, 2], 'z')
-    return orb
+    return orb, pos
 
 def plot(r, bod_rad):
     #Setup plot environment
@@ -74,11 +81,15 @@ def plot_animate(r, bod_rad, steps, dt):
     ax.set_ylim([-max_val, max_val])
     ax.set_zlim([-max_val, max_val])
 
+    #Plot background and body to orbit
     ax = plot_bckground(ax, bod_rad)
+    #Setup initial position and current position
     ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
+    orb, = ax.plot(r[0,0], r[0,1], r[0,2], 'k--', label='trajectory', zorder=10)
     pos, = ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'go', label='Current Position', zorder=10)
-
-    anime = animation.FuncAnimation(fig, orbit_anim,fargs=(ax, r, pos), frames=steps, interval=dt)
+    
+    #Animate trajectory
+    anime = animation.FuncAnimation(fig,  orbit_anim, fargs=(ax, r, orb, pos,), frames=steps, interval=dt, blit=True)
     
     plt.legend()
     plt.show()
@@ -112,9 +123,9 @@ if __name__ == '__main__':
     #Implementation of keplar's laws
     #Radius of orbit
     r_mag = earth_radius + 3000
-    #Speed
+    #Speed required to stay in a circular orbit of radius r_mag around the center of the earth
     v_mag = np.sqrt(earth_Mu / r_mag)
-    #Period
+    #Period for the circular orbit
     per = np.sqrt( ( r_mag**3 * 4 * np.pi** 2) / earth_Mu ) * 10
     #Timestep 
     dt = 60
@@ -123,7 +134,7 @@ if __name__ == '__main__':
     
     #Set initial conditions
     r0 = np.array([r_mag,0,0])
-    v0 = np.array([0, v_mag, 0])
+    v0 = np.array([v_mag / 2, v_mag * 1.004, v_mag / 10])
 
 
     #initialize array (efficiency)
@@ -149,5 +160,5 @@ if __name__ == '__main__':
         step+=1
     
     rs = ys[:, :]
-    #plot(rs, earth_radius)
+    plot(rs, earth_radius)
     plot_animate(rs, earth_radius, steps, dt)
