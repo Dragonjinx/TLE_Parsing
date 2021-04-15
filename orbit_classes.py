@@ -128,7 +128,7 @@ def animate_orbits(*Satellites):
         sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit()
         orb+=1
-    anime = plotter.plot_animate_function(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits)
+    anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits)
     return anime
 
 def plot_orbits(*Satellites):
