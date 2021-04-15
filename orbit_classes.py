@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import linalg
 from scipy.integrate import ode
+from matplotlib.animation import PillowWriter
 import plotter
 import differentail_solver as ds
 import planetary_data as pd
@@ -21,7 +22,7 @@ class State:
         self.x = new_pos[0]
         self.y = new_pos[1]
         self.z = new_pos[2]
-    def update_vel(self, new_vel):
+    def update_vel(self, new_vel):  
         self.vx = new_vel[0]
         self.vy = new_vel[1]
         self.vz = new_vel[2]
@@ -34,47 +35,42 @@ class State:
 
 class Satellite:
     # Satellite State Object, Time Period to render, Time Step, Orbiting Body Object, Animate Complete Orbit
-    def __init__(self, state, period, dt, orbit_body=pd.earth, complete=True):
+    def __init__(self, state, period, dt, central_body=pd.earth, complete=True):
         self.state = state
         self.period = period
         self.dt = dt
-        self.orbit_body = orbit_body
+        self.central_body = central_body
         self.FullAnimation = complete
-    def propagate_orbit(self):
-        #Radius of orbit
-        self.r_mag = self.orbit_body['radius'] + self.state.orbit_height
-
-        #Keplar's Laws:
-        #Tangential speed required to maintain a circular obit
-        self.min_v_mag = np.sqrt(self.orbit_body['Mu'] / self.r_mag)
-        #Period of a circular orbit with minimum velocity
-        per = np.sqrt( ( self.r_mag**3 * 4 * np.pi** 2) / self.orbit_body['Mu']) * 20
         
+        # Radios of orbit
+        self.r_mag = self.central_body['radius'] + self.state.orbit_height
+
+        # Keplar's Laws:
+        # Tangential speed required to maintain a circular obit
+        self.min_v_mag = np.sqrt(self.central_body['Mu'] / self.r_mag)
+        # Period of a circular orbit with minimum velocity
+        per = np.sqrt( ( self.r_mag**3 * 4 * np.pi** 2) / self.central_body['Mu'])
         #Check to set animation period
         if self.period > per and self.FullAnimation == True:
             per = self.period
         elif self.FullAnimation == False:
             per = self.period
-        
         #Number of steps
-        steps = int(np.ceil(per/self.dt))
-        
+        self.steps = int(np.ceil(per/self.dt))
         #Set initial conditions if none are given:
         if linalg.norm(self.state.get_elements()) == 0:
             self.state.update_pos([self.r_mag, 0, 0])
             self.state.update_vel([0, self.min_v_mag, 0])
         elif linalg.norm(self.state.get_pos()) < self.r_mag:
             self.state.update_pos([self.r_mag, 0, 0])
+    
+    def propagate_orbit(self):
 
-        # old implementation
-        # r0 = self.state.get_pos() 
-        # v0 = self.state.get_vel()
-        # y0 = np.concatenate((r0, v0), axis=None)
         y0 = self.state.get_elements()
 
         #initialize orbit and timestep array (efficiency)
-        ys = np.zeros((steps, 6))
-        ts = np.zeros((steps, 1)) 
+        ys = np.zeros((self.steps, 6))
+        ts = np.zeros((self.steps, 1)) 
 
         #initial state:
         ys[0] = y0
@@ -84,25 +80,83 @@ class Satellite:
         solver = ode(ds.differential)
         solver.set_integrator('lsoda')
         solver.set_initial_value(y0, 0)
-        solver.set_f_params(self.orbit_body['Mu'])
+        solver.set_f_params(self.central_body['Mu'])
 
         #Solve position and velocity for the orbit period
-        while solver.successful() and step < steps:
+        while solver.successful() and step < self.steps:
             solver.integrate(solver.t+self.dt)
             self.state.update_pos(solver.y[:3])
             self.state.update_vel(solver.y[3:6])
             # Stop if it hits earth:
-            if linalg.norm(self.state.get_pos()) < self.orbit_body['radius']:
-                steps = step
+            if linalg.norm(self.state.get_pos()) < self.central_body['radius']:
+                self.steps = step
             ts[step] = solver.t
             ys[step] = solver.y
             step+=1
-        #Store all position and 
-        rs = ys[:steps,:]
-        plotter.plot_animate(rs, self.orbit_body['radius'], steps, self.dt)
+        #Store all position 
+        rs = ys[:self.steps,:]
+        return rs
+    
+    def plot_sat_orb(self):
+        plotter.plot_n(self.propagate_orbit(), self.central_body['radius'])
 
+    def animate_sat_orb(self):
+        plotter.plot_animate(self.propagate_orbit(), self.central_body['radius'], self.steps, self.dt)
+
+def max_steps(*Satellites):
+    # Input handling
+    for i in range(len(Satellites)):
+        a = tuple(Satellites[i])
+        Satellites = Satellites[:i] + a + Satellites[i+1:]
+
+    max_stp = 0
+    for i in Satellites:
+        if i.steps > max_stp:
+            max_stp = i.steps
+    return max_stp
+
+def animate_orbits(*Satellites):
+    # Input handling
+    for i in range(len(Satellites)):
+        a = tuple(Satellites[i])
+        Satellites = Satellites[:i] + a + Satellites[i+1:]
+    # Number of orbits to animate
+    orbits = len(Satellites)
+    rs = [None] * orbits
+    orb = 0
+    animation_steps = max_steps(Satellites)
+    for sat in Satellites:
+        sat.steps = animation_steps
+        rs[orb] = sat.propagate_orbit()
+        orb+=1
+    anime = plotter.plot_animate_function(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits)
+    return anime
+
+def plot_orbits(*Satellites):
+    # Input handling
+    for i in range(len(Satellites)):
+        a = tuple(Satellites[i])
+        Satellites = Satellites[:i] + a + Satellites[i+1:]
+    # Number of orbits to animate
+    orbits = len(Satellites)
+    rs = [None] * orbits
+    orb = 0
+    for sat in Satellites:
+        rs[orb] = sat.propagate_orbit()
+        orb+=1
+    
+    # Satellites[0].steps
+    plotter.plot_n(rs, Satellites[0].central_body['radius'])
+    # return anime
 
 if __name__ == '__main__':
-    sat_state = State(2000)
-    Sat = Satellite(sat_state, 3000, 60)
-    Sat.propagate_orbit()
+    sat_state1 = State(2000)
+    sat_state2 = State(5000)
+    Sat = Satellite(sat_state1, 30, 60)
+    Sat2 = Satellite(sat_state2, 30, 60)
+    # Sat.animate_sat_orb()
+    # Sat2.animate_sat_orb()
+    # plot_orbits([Sat, Sat2])
+    saat = [Sat, Sat2]
+    anime = animate_orbits(saat)
+    # anime.save("single.gif", writer='imagemagick', fps=60)

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import ode
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import animation
+import copy
 
 """
 F = GM m / r^2
@@ -31,38 +32,42 @@ def plot_bckground(ax, rplot):
 
     return ax
 
-def plot_orbit(ax, r):
+def plot_orbit(ax, r, index=''):
     #Trajectory and starting point of satellite
-    ax.plot(r[:,0], r[:,1], r[:,2], 'k--', label='trajectory', zorder=10)
-    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
+    ax.plot(r[:,0], r[:,1], r[:,2], '--', label='trajectory' + index , zorder=10)
+    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'o', label='Starting Position' + index, zorder=20)
     return ax
 
-def orbit_anim(frame, r, orb, pos):
+def orbit_anim(frame, r, artists):
     #Trajectory and current position implementation to animate the satellite
     # The implementation below was a bad way of doing this, resulted in conflicts during animation
     # orb = ax.plot(r[:frame+1, 0], r[:frame+1, 1], r[:frame+1, 2], 'k--', label='trajectory', zorder=10)
     # This plotted a steady line of current position, don't do this 
     # ax.plot(r[frame, 0], r[frame, 1], r[frame, 2], 'go', zorder=10)
-    orb.set_data(r[:frame+1, 0], r[:frame+1, 1])
-    orb.set_3d_properties(r[:frame+1, 2], 'z')    
-    pos.set_data(r[frame, 0], r[frame, 1])
-    pos.set_3d_properties(r[frame, 2], 'z')
-    return orb, pos
+    r_indx = 0
+    for art in artists:
+        art[0].set_data(r[r_indx][:frame, 0], r[r_indx][:frame, 1])
+        art[0].set_3d_properties(r[r_indx][:frame, 2], 'z')    
+        art[1].set_data(r[r_indx][frame, 0], r[r_indx][frame, 1])
+        art[1].set_3d_properties(r[r_indx][frame, 2], 'z')
+        r_indx += 1
+    return sum(artists, [])
 
-def plot(r, bod_rad):
+def plot_n(r, bod_rad):
+    rx = list(r)
     #Setup plot environment
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
     #Defining plot limits
-    max_val = np.max(np.abs(r))
+    max_val = np.max(np.abs(bod_rad * 3))
     ax.set_xlim([-max_val, max_val])
     ax.set_ylim([-max_val, max_val])
     ax.set_zlim([-max_val, max_val])
     
     #Plot the orbit
-    ax = plot_orbit(ax, r)    
-    
-    #define the radius of body to orbit
+    for rxx in rx:
+        ax = plot_orbit(ax, rxx, str(rx.index(rxx)))    
+    #define the radius of body to orbit    
     rplot = bod_rad
     #plot body to orbit
     ax = plot_bckground(ax, bod_rad)
@@ -70,11 +75,13 @@ def plot(r, bod_rad):
     plt.legend()
     plt.show()
 
-def plot_animate(r, bod_rad, steps, dt):
+def plot_animate_n(r, bod_rad, steps, dt, orbits=1):
+    # Force r to be a list (For single value cases)
+    rx = list(r)
     #Setup plot environment
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
-    max_val = np.max(np.abs(r))
+    max_val = np.max(np.abs(bod_rad * 3))
     ax.set_xlim([-max_val, max_val])
     ax.set_ylim([-max_val, max_val])
     ax.set_zlim([-max_val, max_val])
@@ -82,12 +89,26 @@ def plot_animate(r, bod_rad, steps, dt):
     #Plot background and body to orbit
     ax = plot_bckground(ax, bod_rad)
     #Setup initial position and current position
-    ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'ko', label='Starting Position', zorder=20)
-    orb, = ax.plot(r[0,0], r[0,1], r[0,2], 'k--', label='trajectory', zorder=10)
-    pos, = ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'go', label='Current Position', zorder=10)
     
+    # Setup artist list 
+    artists = []
+    indx = 0
+    for tr in rx:
+        indxstr = str(indx)
+        ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Starting Position ' + indxstr), zorder=20)
+        a = ax.plot(tr[0,0], tr[0,1], tr[0,2], '--', label=('trajectory' + indxstr) , zorder=10)
+        b = ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Current Position' + indxstr), zorder=10)
+        # ax plot returns a list object, but it is not unpacked by the plotter function
+        artists.append(a + b)
+        # Valuable lessons learned, python lists dont work like c++ lists, if you wanna add new  vlaues, pls just append them
+        # Its inefficient timewise I know, but if I try to have a predefined matrix and copy into them, it just copies the references
+        # and the next time, it overrides the reference values
+        # What not to do:
+        # artists[index] = a + b
+        indx += 1
+
     #Animate trajectory
-    anime = animation.FuncAnimation(fig,  orbit_anim, fargs=(r, orb, pos,), frames=steps, interval=dt, blit=True)
-    
+    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists), frames=steps, interval=dt, blit=True, repeat=False)
     plt.legend()
     plt.show()
+    return anime
