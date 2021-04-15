@@ -1,7 +1,6 @@
 import numpy as np
 from numpy import linalg
 from scipy.integrate import ode
-from matplotlib.animation import PillowWriter
 import plotter
 import differentail_solver as ds
 import planetary_data as pd
@@ -148,15 +147,3 @@ def plot_orbits(*Satellites):
     # Satellites[0].steps
     plotter.plot_n(rs, Satellites[0].central_body['radius'])
     # return anime
-
-if __name__ == '__main__':
-    sat_state1 = State(2000)
-    sat_state2 = State(5000)
-    Sat = Satellite(sat_state1, 30, 60)
-    Sat2 = Satellite(sat_state2, 30, 60)
-    # Sat.animate_sat_orb()
-    # Sat2.animate_sat_orb()
-    # plot_orbits([Sat, Sat2])
-    saat = [Sat, Sat2]
-    anime = animate_orbits(saat)
-    # anime.save("single.gif", writer='imagemagick', fps=60)
