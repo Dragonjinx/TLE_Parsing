@@ -62,8 +62,17 @@ class Satellite:
             self.state.update_vel([0, self.min_v_mag, 0])
         elif linalg.norm(self.state.get_pos()) < self.r_mag:
             self.state.update_pos([self.r_mag, 0, 0])
+
+        #Update initial positions
+        self.state.initial_pos = list(self.state.get_pos())
+        self.state.initial_vel = list(self.state.get_vel()) 
     
-    def propagate_orbit(self):
+    def propagate_orbit(self, reset=False):
+
+        if reset == True:
+            #Reset to initial values 
+            self.state.update_pos(self.state.initial_pos)
+            self.state.update_vel(self.state.initial_vel)
 
         y0 = self.state.get_elements()
 
@@ -131,7 +140,7 @@ def animate_orbits(*Satellites, factor = 1, override=False):
     print('Duration (s):' , (Satellites[0].dt * animation_steps * 0.01))
     for sat in Satellites:
         sat.steps = animation_steps
-        rs[orb] = sat.propagate_orbit()
+        rs[orb] = sat.propagate_orbit(reset=override)
         orb+=1
     
     if override == True:
