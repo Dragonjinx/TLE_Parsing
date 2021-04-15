@@ -1,6 +1,6 @@
 https://github.com/Dragonjinx/TLE_Parsing
 
 # Installation:
-    run setup.sh
+    ./setup.sh
     source Orbital/bin/activate
-    run simple_demo.py`
+    python simple_demo.py
