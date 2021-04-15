@@ -117,7 +117,7 @@ def max_steps(*Satellites):
             max_stp = i.steps
     return max_stp
 
-def animate_orbits(*Satellites, factor = 1):
+def animate_orbits(*Satellites, factor = 1, override=False):
     # Input handling
     for i in range(len(Satellites)):
         a = tuple(Satellites[i])
@@ -133,7 +133,11 @@ def animate_orbits(*Satellites, factor = 1):
         sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit()
         orb+=1
-    anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits)
+    
+    if override == True:
+        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], 200 , Satellites[0].dt, orbits=orbits, show=False)
+    else:
+        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits)
     return anime
 
 def plot_orbits(*Satellites):
@@ -152,3 +156,7 @@ def plot_orbits(*Satellites):
     # Satellites[0].steps
     plotter.plot_n(rs, Satellites[0].central_body['radius'])
     # return anime
+
+def save_plot(Name, *Satellites):
+    anime = animate_orbits(*Satellites, override=True)
+    anime.save(Name + '.gif', writer='imagemagick', fps=60, progress_callback= lambda i, n: print(f'Saving frame {i} of {n}'))

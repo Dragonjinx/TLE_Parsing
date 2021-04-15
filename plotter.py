@@ -75,7 +75,7 @@ def plot_n(r, bod_rad):
     plt.legend()
     plt.show()
 
-def plot_animate_n(r, bod_rad, steps, dt, orbits=1):
+def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True):
     # Force r to be a list (For single value cases)
     rx = list(r)
     #Setup plot environment
@@ -108,7 +108,8 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1):
         indx += 1
 
     #Animate trajectory
-    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists), frames=steps, interval=dt, blit=True, repeat=False)
-    plt.legend()
-    plt.show()
+    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists), frames=steps, interval=dt, blit=True, repeat=False, save_count=100)
+    if show == True:
+        plt.legend()
+        plt.show()
     return anime

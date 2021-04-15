@@ -27,6 +27,6 @@ if __name__ == '__main__':
     # Sat1 = oc.Satellite(sat_state1, 30, 60)
     # Sat2 = oc.Satellite(sat_state2, 30, 60)
     # saat = [Sat1, Sat2]
-    anime = oc.animate_orbits(saat, factor=10)
+    # anime = oc.animate_orbits(saat, factor=10)
+    oc.save_plot('Try2', saat)
     # Uncomment at your own risk! 
-    # anime.save("try.gif", writer='imagemagick', fps=60, progress_callback= lambda i, n: print(f'Saving frame {i} of {n}'))
