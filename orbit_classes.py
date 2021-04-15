@@ -127,7 +127,8 @@ def animate_orbits(*Satellites, factor = 1):
     rs = [None] * orbits
     orb = 0
     animation_steps = max_steps(Satellites) * factor
-    print(animation_steps)
+    print('Frames:', animation_steps)
+    print('Duration (s):' , (Satellites[0].dt * animation_steps * 0.01))
     for sat in Satellites:
         sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit()
