@@ -83,15 +83,18 @@ class Satellite:
 
         #Solve position and velocity for the orbit period
         while solver.successful() and step < self.steps:
-            solver.integrate(solver.t+self.dt)
-            self.state.update_pos(solver.y[:3])
-            self.state.update_vel(solver.y[3:6])
             # Stop if it hits earth:
             if linalg.norm(self.state.get_pos()) < self.central_body['radius']:
-                self.steps = step
-            ts[step] = solver.t
-            ys[step] = solver.y
-            step+=1
+                ts[step] = solver.t
+                ys[step] = self.state.get_elements()
+                step +=1
+            else:
+                solver.integrate(solver.t+self.dt)
+                self.state.update_pos(solver.y[:3])
+                self.state.update_vel(solver.y[3:6])
+                ts[step] = solver.t
+                ys[step] = solver.y
+                step+=1
         #Store all position 
         rs = ys[:self.steps,:]
         return rs
@@ -114,7 +117,7 @@ def max_steps(*Satellites):
             max_stp = i.steps
     return max_stp
 
-def animate_orbits(*Satellites):
+def animate_orbits(*Satellites, factor = 1):
     # Input handling
     for i in range(len(Satellites)):
         a = tuple(Satellites[i])
@@ -123,7 +126,8 @@ def animate_orbits(*Satellites):
     orbits = len(Satellites)
     rs = [None] * orbits
     orb = 0
-    animation_steps = max_steps(Satellites)
+    animation_steps = max_steps(Satellites) * factor
+    print(animation_steps)
     for sat in Satellites:
         sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit()
