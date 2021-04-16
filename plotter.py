@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import ode
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import animation
+from matplotlib import animation, artist
 import copy
 
 """
@@ -38,19 +38,32 @@ def plot_orbit(ax, r, index=''):
     ax.plot([r[0,0]],[r[0, 1]], [r[0,2]],'o', label='Starting Position' + index, zorder=20)
     return ax
 
-def orbit_anim(frame, r, artists):
+def orbit_anim(frame, r, artists, frame_counter=False):
     #Trajectory and current position implementation to animate the satellite
     # The implementation below was a bad way of doing this, resulted in conflicts during animation
     # orb = ax.plot(r[:frame+1, 0], r[:frame+1, 1], r[:frame+1, 2], 'k--', label='trajectory', zorder=10)
     # This plotted a steady line of current position, don't do this 
     # ax.plot(r[frame, 0], r[frame, 1], r[frame, 2], 'go', zorder=10)
     r_indx = 0
-    for art in artists:
-        art[0].set_data(r[r_indx][:frame, 0], r[r_indx][:frame, 1])
-        art[0].set_3d_properties(r[r_indx][:frame, 2], 'z')    
-        art[1].set_data(r[r_indx][frame, 0], r[r_indx][frame, 1])
-        art[1].set_3d_properties(r[r_indx][frame, 2], 'z')
-        r_indx += 1
+    if frame_counter is not False:
+        for art in artists[:-1]:
+            art[0].set_data(r[r_indx][:frame, 0], r[r_indx][:frame, 1])
+            art[0].set_3d_properties(r[r_indx][:frame, 2], 'z')    
+            art[1].set_data(r[r_indx][frame, 0], r[r_indx][frame, 1])
+            art[1].set_3d_properties(r[r_indx][frame, 2], 'z')
+            r_indx += 1
+
+        artists[-1][0].label = 'Frame: ' +str(frame)
+        
+    else:
+        for art in artists:
+            art[0].set_data(r[r_indx][:frame, 0], r[r_indx][:frame, 1])
+            art[0].set_3d_properties(r[r_indx][:frame, 2], 'z')    
+            art[1].set_data(r[r_indx][frame, 0], r[r_indx][frame, 1])
+            art[1].set_3d_properties(r[r_indx][frame, 2], 'z')
+            r_indx += 1
+
+    # plt.legend('Frames: ' + str(frame))
     return sum(artists, [])
 
 def plot_n(r, bod_rad):
@@ -75,7 +88,7 @@ def plot_n(r, bod_rad):
     plt.legend()
     plt.show()
 
-def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True):
+def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True, label=True):
     # Force r to be a list (For single value cases)
     rx = list(r)
     #Setup plot environment
@@ -107,9 +120,17 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True):
         # artists[index] = a + b
         indx += 1
 
+    #Set point to display label in legend:
+    if label is True:
+        c = ax.plot([], [], [], label = 'Frame: 0', zorder = 0)
+        artists.append(c)
+        print(artists[-1])
+
     #Animate trajectory
-    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists), frames=steps, interval=dt, blit=True, repeat=False, save_count=100)
+    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists,label), frames=steps, interval=dt, blit=True, repeat=False, save_count=100)
+    
     if show == True:
         plt.legend()
         plt.show()
+    
     return anime
