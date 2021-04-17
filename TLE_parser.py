@@ -90,3 +90,22 @@ class TLE:
         # self.TLE_state.orbit_height = self.Periapsis_height
         self.TLE_state.update_pos(state_vector[:3])
         self.TLE_state.update_vel(state_vector[3:])
+
+
+def TLE_From_File(file_name):
+    tles = []
+    cntr = 0
+    with open(file_name, 'r') as f:
+        mx = len(f.readlines())
+        f.close()
+    with open(file_name, 'r') as f:
+        while cntr < mx:    
+            lines = []
+            for i in range(3):
+                lines.append(f.readline())
+                cntr += 1
+            if lines:
+                tles.append(''.join(lines))
+        f.close()
+
+    return tles

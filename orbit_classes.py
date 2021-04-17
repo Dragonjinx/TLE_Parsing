@@ -42,6 +42,7 @@ class Satellite:
         
         if t_l_e:
             self.TLE = state
+            self.Name = self.TLE.Name
             self.state = state.TLE_state
             self.period = state.Period
             if self.FullAnimation:
