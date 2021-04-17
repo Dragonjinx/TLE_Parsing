@@ -65,6 +65,7 @@ class Satellite:
                 per = self.period
             
             
+            norm_coordnts = linalg.norm(self.state.get_pos())
             #Number of steps
             self.steps = int(np.ceil(per/self.dt))
             
@@ -72,7 +73,7 @@ class Satellite:
             if linalg.norm(self.state.get_elements()) == 0:
                 self.state.update_pos([self.r_mag, 0, 0])
                 self.state.update_vel([0, self.min_v_mag, 0])
-            elif linalg.norm(self.state.get_pos()) < self.r_mag:
+            elif  norm_coordnts < self.r_mag:
                 self.state.update_pos([self.r_mag, 0, 0])
 
         #Update initial positions

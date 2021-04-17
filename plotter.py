@@ -111,7 +111,6 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, Repeat=False, show=True, lab
         # ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Starting Position ' + indxstr), zorder=20)
         a = ax.plot(tr[0,0], tr[0,1], tr[0,2], '--', label=('trajectory' + indxstr), zorder=10)
         b = ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Current Position' + indxstr), zorder=10)
-        # ax plot returns a list object, but it is not unpacked by the plotter function
         artists.append(a + b)
         # Valuable lessons learned, python lists dont work like c++ lists, if you wanna add new  vlaues, pls just append them
         # Its inefficient timewise I know, but if I try to have a predefined matrix and copy into them, it just copies the references
@@ -124,7 +123,6 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, Repeat=False, show=True, lab
     if label is True:
         c = ax.plot([], [], [], label = 'Frame: 0', zorder = 0)
         artists.append(c)
-        print(artists[-1])
 
     #Animate trajectory
     anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists,label), frames=steps, interval=dt, blit=True, repeat=Repeat, save_count=100)

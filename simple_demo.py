@@ -8,19 +8,15 @@ if __name__ == '__main__':
     time_frame = 3000 # seconds
     time_step = 60 # seconds
     
-    states = []
-
-    # for i in range(5):
-    #     height = random.randint(1, 100) * 100
-    #     x = random.randint(1, 10) * 100
-    #     y = random.randint(1, 10) * 100
-    #     z = random.randint(1, 10) * 100
-    #     vx = random.randint(1, 5)
-    #     vy = random.randint(1, 5)
-    #     vz = random.randint(1, 5)
-    #     st = oc.State(height, x, y, z, vx, vy, vz)
-    #     print(st.get_elements())
-    #     states.append(st)
+    # states = []
+    # Problematic velocity
+    # Either: vy = 4 and vz < 4
+    # Or: vz = 4 and vy < 4
+    # stt = oc.State(1600, 7078, vx=3, vy=3, vz=4)
+    # states.append(stt)
+    # for i in states:
+    #     satel = oc.Satellite(i, 1000, 60, complete=False)
+    #     saat.append(satel)
 
     saat = []
     tleeeee = []
