@@ -88,7 +88,7 @@ def plot_n(r, bod_rad):
     plt.legend()
     plt.show()
 
-def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True, label=True):
+def plot_animate_n(r, bod_rad, steps, dt, orbits=1, Repeat=False, show=True, label=True):
     # Force r to be a list (For single value cases)
     rx = list(r)
     #Setup plot environment
@@ -109,7 +109,7 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True, label=True):
     for tr in rx:
         indxstr = str(indx)
         ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Starting Position ' + indxstr), zorder=20)
-        a = ax.plot(tr[0,0], tr[0,1], tr[0,2], '--', label=('trajectory' + indxstr) , zorder=10)
+        a = ax.plot(tr[0,0], tr[0,1], tr[0,2], '--', label=('trajectory' + indxstr), zorder=10)
         b = ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Current Position' + indxstr), zorder=10)
         # ax plot returns a list object, but it is not unpacked by the plotter function
         artists.append(a + b)
@@ -127,7 +127,7 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, show=True, label=True):
         print(artists[-1])
 
     #Animate trajectory
-    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists,label), frames=steps, interval=dt, blit=True, repeat=False, save_count=100)
+    anime =  animation.FuncAnimation(fig,  orbit_anim, fargs=(r, artists,label), frames=steps, interval=dt, blit=True, repeat=Repeat, save_count=100)
     
     if show == True:
         plt.legend()

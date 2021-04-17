@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import linalg
 from scipy.integrate import ode
+
 import plotter
 import differentail_solver as ds
 import planetary_data as pd
-
 #Distace is in Km and velocity is in Km/s
 class State:
     def __init__(self, orbit_height = 0, x = 0, y = 0, z = 0, vx = 0, vy = 0, vz = 0):
@@ -34,35 +34,45 @@ class State:
 
 class Satellite:
     # Satellite State Object, Time Period to render, Time Step, Orbiting Body Object, Animate Complete Orbit
-    def __init__(self, state, period, dt, central_body=pd.earth, complete=True):
-        self.state = state
+    def __init__(self, state, period, dt, t_l_e =False, central_body=pd.earth, complete=True):
         self.period = period
         self.dt = dt
         self.central_body = central_body
         self.FullAnimation = complete
         
-        # Radios of orbit
-        self.r_mag = self.central_body['radius'] + self.state.orbit_height #Km
-
-        # Keplar's Laws:
-        # Tangential speed required to maintain a circular obit
-        self.min_v_mag = np.sqrt(self.central_body['Mu'] / self.r_mag) # KM / s
-        # Period of a circular orbit with minimum velocity
-        per = np.sqrt( ( self.r_mag**3 * 4 * np.pi** 2) / self.central_body['Mu']) # s
-        
-        #Check to set animation period
-        if self.period > per and self.FullAnimation == True:
-            per = self.period
-        elif self.FullAnimation == False:
-            per = self.period
-        #Number of steps
-        self.steps = int(np.ceil(per/self.dt))
-        #Set initial conditions if none are given:
-        if linalg.norm(self.state.get_elements()) == 0:
-            self.state.update_pos([self.r_mag, 0, 0])
-            self.state.update_vel([0, self.min_v_mag, 0])
-        elif linalg.norm(self.state.get_pos()) < self.r_mag:
-            self.state.update_pos([self.r_mag, 0, 0])
+        if t_l_e:
+            self.TLE = state
+            self.state = state.TLE_state
+            self.period = state.Period
+            if self.FullAnimation:
+                self.steps = int(self.period)
+            else:
+                self.steps = int(np.ceil(period / self.dt))
+        else:
+            self.state = state
+            # Radios of orbit
+            self.r_mag = self.central_body['radius'] + self.state.orbit_height #Km
+            # Keplar's Laws:
+            # Tangential speed required to maintain a circular obit
+            self.min_v_mag = np.sqrt(self.central_body['Mu'] / self.r_mag) # KM / s
+            # Period of a circular orbit with minimum velocity
+            per = np.sqrt( ( self.r_mag**3 * 4 * np.pi** 2) / self.central_body['Mu']) # s
+            #Check to set animation period
+            if self.period > per and self.FullAnimation == True:
+                per = self.period
+            elif self.FullAnimation == False:
+                per = self.period
+            
+            
+            #Number of steps
+            self.steps = int(np.ceil(per/self.dt))
+            
+            #Set initial conditions if none are given:
+            if linalg.norm(self.state.get_elements()) == 0:
+                self.state.update_pos([self.r_mag, 0, 0])
+                self.state.update_vel([0, self.min_v_mag, 0])
+            elif linalg.norm(self.state.get_pos()) < self.r_mag:
+                self.state.update_pos([self.r_mag, 0, 0])
 
         #Update initial positions
         self.state.initial_pos = list(self.state.get_pos())
@@ -128,7 +138,7 @@ def max_steps(*Satellites):
             max_stp = i.steps
     return max_stp
 
-def animate_orbits(Satellites, factor = 1, override=False):
+def animate_orbits(Satellites, factor = 1, override=False, Repeat=False):
     # Number of orbits to animate
     orbits = len(Satellites)
     rs = [None] * orbits
@@ -146,7 +156,7 @@ def animate_orbits(Satellites, factor = 1, override=False):
     if override == True:
         anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], 200 , Satellites[0].dt, orbits=orbits, show=False)
     else:
-        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits, show=True)
+        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits, Repeat=Repeat, show=True)
     return anime
 
 def plot_orbits(Satellites):

@@ -34,10 +34,11 @@ if __name__ == '__main__':
 
     sat_state1 = implement.TLE_state
     # sat_state2 = oc.State(2000, 1000, 1000, 1000)
-    Sat1 = oc.Satellite(sat_state1, 30, 60)
+    # Sat1 = oc.Satellite(sat_state1, 30, 60)
+    Sat1 = oc.Satellite(implement, 30, 60, t_l_e=True)
     # Sat2 = oc.Satellite(sat_state2, 30, 60)
     # saat = [Sat1, Sat2]
     # oc.plot_orbits(saat)
-    anime = oc.animate_orbits([Sat1], factor=10)
+    anime = oc.animate_orbits([Sat1], factor=10, Repeat=True)
     # oc.save_plot('Try2', saat)
     # Uncomment at your own risk! 
