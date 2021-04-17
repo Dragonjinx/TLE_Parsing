@@ -108,7 +108,7 @@ def plot_animate_n(r, bod_rad, steps, dt, orbits=1, Repeat=False, show=True, lab
     indx = 0
     for tr in rx:
         indxstr = str(indx)
-        ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Starting Position ' + indxstr), zorder=20)
+        # ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Starting Position ' + indxstr), zorder=20)
         a = ax.plot(tr[0,0], tr[0,1], tr[0,2], '--', label=('trajectory' + indxstr), zorder=10)
         b = ax.plot(tr[0,0],tr[0, 1], tr[0,2],'o', label=('Current Position' + indxstr), zorder=10)
         # ax plot returns a list object, but it is not unpacked by the plotter function
