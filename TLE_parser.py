@@ -92,27 +92,3 @@ class TLE:
         self.TLE_state.update_vel(state_vector[3:])
         print(self.Epoch)
         print(self.TLE_state.get_elements())
-
-
-# General algorithm of how conics() is done
-# Don't use this
-def orbit_elementals_to_state_vector(semimajor_axis, eccentricity, inclination, true_anamoly, argument_of_periapsis, longitude_of_ascending_node, central_body_Mu):
-    
-    ecc_inv = 1 - eccentricity**2
-
-    r_norm = semimajor_axis * (ecc_inv) / (1 + eccentricity*cos(true_anamoly))
-
-    eccentric_anamoly = 0
-
-    # Perifocal Frame:
-    r_perifocal = r_norm * np.array([cos(true_anamoly), sin(true_anamoly), 0])
-    v_perifocal = sqrt(central_body_Mu * semimajor_axis) / r_norm*np.array([-sin(eccentric_anamoly), cos(eccentric_anamoly) * sqrt(ecc_inv), 0])
-
-    # Perifocal to ECI frame of reference:
-    ECI = 0
-
-    # R and V calcualtion for frame of reference:
-    r = np.dot( ECI, r_perifocal)
-    v = np.dot(ECI, v_perifocal)
-
-    return r, v
