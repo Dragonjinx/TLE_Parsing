@@ -136,6 +136,8 @@ def animate_orbits(Satellites, factor = 1, override=False):
     animation_steps = max_steps(Satellites) * factor
     print('Frames:', animation_steps)
     print('Duration (s):' , (Satellites[0].dt * animation_steps * 0.01))
+    print('Time per frame: ', Satellites[0].dt)
+    print('Frames per second: ', 1000/Satellites[0].dt)
     for sat in Satellites:
         sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit(reset=override)

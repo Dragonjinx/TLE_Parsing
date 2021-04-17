@@ -3,6 +3,9 @@ import random
 
 if __name__ == '__main__':
 
+    time_frame = 3000 # seconds
+    time_step = 60 # seconds
+    
     states = []
 
     for i in range(5):
@@ -14,12 +17,13 @@ if __name__ == '__main__':
         vy = random.randint(1, 5)
         vz = random.randint(1, 5)
         st = oc.State(height, x, y, z, vx, vy, vz)
+        print(st.get_elements())
         states.append(st)
 
     saat = []
 
-    for stt in states   :
-        satel = oc.Satellite(stt, 30, 60)
+    for stt in states:
+        satel = oc.Satellite(stt, time_frame, time_step)
         saat.append(satel)
 
     # sat_state1 = oc.State(2000)
@@ -27,6 +31,7 @@ if __name__ == '__main__':
     # Sat1 = oc.Satellite(sat_state1, 30, 60)
     # Sat2 = oc.Satellite(sat_state2, 30, 60)
     # saat = [Sat1, Sat2]
+    # oc.plot_orbits(saat)
     anime = oc.animate_orbits(saat, factor=10)
-    oc.save_plot('Try2', saat)
+    # oc.save_plot('Try2', saat)
     # Uncomment at your own risk! 
