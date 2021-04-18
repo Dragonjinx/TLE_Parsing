@@ -30,6 +30,6 @@ if __name__ == '__main__':
         satel = oc.Satellite(i, 1000, 60, t_l_e=True, complete=False)
         saat.append(satel)
     
-    anime = oc.animate_orbits(saat, factor=10, Repeat=True)
-    # oc.save_plot('ISS', [Sat1])
+    # anime = oc.animate_orbits(saat, factor=10, Repeat=True)
+    oc.save_plot('sats', saat)
 

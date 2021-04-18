@@ -151,12 +151,15 @@ def animate_orbits(Satellites, factor = 1, override=False, Repeat=False):
     print('Time per frame: ', Satellites[0].dt)
     print('Frames per second: ', 1000/Satellites[0].dt)
     for sat in Satellites:
-        sat.steps = animation_steps
+        if override:
+            sat.steps = 200
+        else:
+            sat.steps = animation_steps
         rs[orb] = sat.propagate_orbit(reset=override)
         orb+=1
     
     if override == True:
-        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], 200 , Satellites[0].dt, orbits=orbits, show=False)
+        anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], 200 , Satellites[0].dt, orbits=orbits, Repeat=False ,show=False)
     else:
         anime = plotter.plot_animate_n(rs, Satellites[0].central_body['radius'], animation_steps , Satellites[0].dt, orbits=orbits, Repeat=Repeat, show=True)
     return anime
@@ -174,6 +177,6 @@ def plot_orbits(Satellites):
     plotter.plot_n(rs, Satellites[0].central_body['radius'])
     # return anime
 
-def save_plot(Name, *Satellites):
-    anime = animate_orbits(*Satellites, override=True)
+def save_plot(Name, Satellites):
+    anime = animate_orbits(Satellites, override=True)
     anime.save(Name + '.gif', writer='imagemagick', fps=60, progress_callback= lambda i, n: print(f'Saving frame {i} of {n}'))
