@@ -49,7 +49,7 @@ def orbit_anim(frame, r, artists, frame_counter=False):
         for art in artists[:-1]:
             art[0].set_data(r[r_indx][:frame, 0], r[r_indx][:frame, 1])
             art[0].set_3d_properties(r[r_indx][:frame, 2], 'z')    
-            art[1].set_data(r[r_indx][frame, 0], r[r_indx][frame, 1])
+            art[1].set_data([r[r_indx][frame, 0]], [r[r_indx][frame, 1]])
             art[1].set_3d_properties(r[r_indx][frame, 2], 'z')
             r_indx += 1
 
